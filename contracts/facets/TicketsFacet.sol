@@ -22,6 +22,10 @@ contract TicketsFacet is IERC1155 {
 
     function uri(uint256 _id) external view returns (string memory) {
         require(_id < 6, "_id not found for  ticket");
+        // INFO: encodePacked could generate the same hash for two different data so it could introduce hash collision 
+        // keccak256(abi.encodePacked("0x1234")) == keccak256(abi.encodePacked("0x12", "0x34"))
+        // it happens because encodePacked doesnt add padding between data
+        // ISSUE: dynamic data on encodePacked
         return string(abi.encodePacked(s.ticketsBaseUri, LibStrings.uintStr(_id)));
     }
 
@@ -51,9 +55,14 @@ contract TicketsFacet is IERC1155 {
         require(_from == msg.sender || s.accounts[_from].ticketsApproved[msg.sender], "Tickets: Not approved to transfer");
         uint256 bal = s.tickets[_id].accountBalances[_from];
         require(bal >= _value, "Tickets: _value greater than balance");
+
+        // ISSUE: validation is doing after the storage modification
+        // TODO: you could evaluate the byte code size before modifying the storage making cheaper on gas
         s.tickets[_id].accountBalances[_from] = bal - _value;
         s.tickets[_id].accountBalances[_to] += _value;
+
         emit TransferSingle(msg.sender, _from, _to, _id, _value);        
+
         uint256 size;
         assembly {
             size := extcodesize(_to)
@@ -92,6 +101,10 @@ contract TicketsFacet is IERC1155 {
         require(_to != address(0), "Tickets: Can't transfer to 0 address");
         require(_ids.length == _values.length, "Tickets: _ids not the same length as _values");        
         require(_from == msg.sender || s.accounts[_from].ticketsApproved[msg.sender], "Tickets: Not approved to transfer");
+
+        // ISSUE: validation is doing after the storage modification
+        // TODO: you could evaluate the byte code size before modifying the storage making cheaper on gas
+
         // gas optimization
         unchecked {                    
             for (uint256 i; i < _ids.length; i++) {
@@ -116,13 +129,15 @@ contract TicketsFacet is IERC1155 {
         }
     }
 
+    // WARN: why is always limited to 6 positions? 
+    // TODO: add natspects
     function totalSupplies() external view returns (uint256[] memory totalSupplies_) {
         totalSupplies_ = new uint256[](6);
         for (uint256 i; i < 6; i++) {
             totalSupplies_[i] = s.tickets[i].totalSupply;
         }
     }
-
+    // TODO: add natspects
     function totalSupply(uint256 _id) external view returns (uint256 totalSupply_) {
         require(_id < 6, "Tickets:  Ticket not found");
         totalSupply_ = s.tickets[_id].totalSupply;
@@ -154,6 +169,7 @@ contract TicketsFacet is IERC1155 {
     function balanceOfBatch(address[] calldata _owners, uint256[] calldata _ids) external view override returns (uint256[] memory balances_) {
         require(_owners.length == _ids.length, "Tickets: _owners not same length as _ids");
         balances_ = new uint256[](_owners.length);
+        // WARN: it could generate run of gas
         for (uint256 i; i < _owners.length; i++) {
             balances_[i] = s.tickets[_ids[i]].accountBalances[_owners[i]];
         }
