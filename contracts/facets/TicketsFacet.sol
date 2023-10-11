@@ -53,7 +53,8 @@ contract TicketsFacet is IERC1155 {
         require(bal >= _value, "Tickets: _value greater than balance");
         s.tickets[_id].accountBalances[_from] = bal - _value;
         s.tickets[_id].accountBalances[_to] += _value;
-        emit TransferSingle(msg.sender, _from, _to, _id, _value);        
+        emit TransferSingle(msg.sender, _from, _to, _id, _value);   
+        // @audit : why is this here?   
         uint256 size;
         assembly {
             size := extcodesize(_to)
@@ -165,6 +166,7 @@ contract TicketsFacet is IERC1155 {
         @param _operator  Address to add to the set of authorized operators
         @param _approved  True if the operator is approved, false to revoke approval
     */
+    // @audit-ok : no verification of operator
     function setApprovalForAll(address _operator, bool _approved) external override {        
         s.accounts[msg.sender].ticketsApproved[_operator] = _approved;
         emit ApprovalForAll(msg.sender, _operator, _approved);
@@ -180,14 +182,17 @@ contract TicketsFacet is IERC1155 {
         return s.accounts[_owner].ticketsApproved[_operator];
     }
 
+    // @audit-ok : struc shoulb be on the top of the contract
     struct TicketOwner {
         address owner;
         uint256[] ids;
         uint256[] values;
     }
 
+    // @audit-issue : everyone can call this function and add tickets to any account
     function migrateTickets(TicketOwner[] calldata _ticketOwners) external {        
         for (uint256 i; i < _ticketOwners.length; i++) {
+            // audit-ok use memory
             TicketOwner calldata ticketOwner = _ticketOwners[i];
             require(ticketOwner.ids.length == ticketOwner.values.length, "TicketFacet: ids and values not the same length");
              // gas optimization

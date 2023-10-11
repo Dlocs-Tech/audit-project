@@ -22,3 +22,5 @@ struct AppStorage {
     string ticketsBaseUri;    
     uint256 poolTokensRate;    
 }
+
+// @audit-ok : i think this is a good way to store data, but it can be optimized putting the mapping on the botton of the struct

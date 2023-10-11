@@ -19,6 +19,10 @@ contract Airdrop {
         require(_receivers.length == _amounts.length, "_receivers.length not the same as _amounts.length");
         for (uint256 i; i < _receivers.length; i++) {
             _receivers[i].transfer(_amounts[i]);
+            /**
+             @audit-issue : transfer is not safe, use call 
+             @audit-issue : check if the receiver address is a contract
+            */
         }
     }
 }

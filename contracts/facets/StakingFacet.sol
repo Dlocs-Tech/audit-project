@@ -56,7 +56,8 @@ contract StakingFacet {
     }
     
     // Transfer all frens from user's account to another account
-    function migrateFrens(address _otherAccount) external {        
+    function migrateFrens(address _otherAccount) external {   
+        // @audit-issue : use tx.origin instead of msg.sender      
         Account storage account = s.accounts[tx.origin];
         Account storage otherAccount = s.accounts[_otherAccount];
         otherAccount.frens += account.frens;
@@ -83,7 +84,7 @@ contract StakingFacet {
     
 
     function withdrawPoolStake(uint256 _poolTokens) external {
-        updateFrens();        
+        updateFrens();     
         uint256 accountPoolTokens = s.accounts[msg.sender].poolTokens;
         require(accountPoolTokens >= _poolTokens, "Can't withdraw more poolTokens than in account");
         s.accounts[msg.sender].poolTokens = accountPoolTokens - _poolTokens;

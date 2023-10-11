@@ -38,6 +38,7 @@ contract StakingDiamond {
 
         s.poolTokensRate = 10;
         emit PoolTokensRate(10);
+        // @audit-info : wrong event immited
 
         // adding ERC165 data
         ds.supportedInterfaces[type(IERC165).interfaceId] = true;        
