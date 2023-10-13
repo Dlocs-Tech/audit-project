@@ -101,4 +101,5 @@ This repository implements `contracts/StakingDiamond.sol`. This is a diamond tha
 `StakingDiamond` is deployed using the `scripts/deploy.js` script.
 
 
+[Foundry instalation guide](https://book.getfoundry.sh/getting-started/installation)
 
