@@ -1,5 +1,11 @@
 {
   "name": "hardhat-project",
+  "scripts": {
+    "init": "pnpm init:foundry",
+    "init:foundry": "forge install",
+    "test:foundry": "forge test",
+    "build:foundry": "forge build"
+  },
   "devDependencies": {
     "@ethersproject/abi": "^5.6.4",
     "@ethersproject/providers": "^5.6.8",
