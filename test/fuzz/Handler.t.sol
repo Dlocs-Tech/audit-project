@@ -7,7 +7,8 @@ import {console} from "forge-std/console.sol";
 import {EnumerableSet} from "@openzeppelin/utils/structs/EnumerableSet.sol";
 
 import {StakingDiamond} from "../../src/StakingDiamond.sol";
-import {StakingFacet} from "../../src/facets/StakingFacet.sol";
+import {StakingFacet, IERC20} from "../../src/facets/StakingFacet.sol";
+import {OwnershipFacet} from "../../src/facets/OwnershipFacet.sol";
 import {TimestampStore} from "./store/TimestampStore.t.sol";
 
 contract Handler is Test {
@@ -19,9 +20,23 @@ contract Handler is Test {
     // Track time
     TimestampStore public timestampStore;
 
-    constructor(StakingDiamond _diamond, TimestampStore _timestampStore) {
+    address public stakingToken;
+
+    constructor(
+        StakingDiamond _diamond,
+        TimestampStore _timestampStore,
+        address _stakingToken
+    ) {
         diamond = _diamond;
         timestampStore = _timestampStore;
+
+        stakingToken = _stakingToken;
+
+        address owner = OwnershipFacet(address(diamond)).owner();
+        vm.startPrank(owner);
+        StakingFacet(address(diamond)).updatePoolTokenContract(stakingToken);
+        OwnershipFacet(address(diamond)).transferOwnership(address(1));
+        vm.stopPrank();
     }
 
     /////////////////////////////////////////////
@@ -42,6 +57,18 @@ contract Handler is Test {
     //              Staking Facet
     /////////////////////////////////////////////
 
+    function updateAccounts(uint seed) public advanceTime(seed) {
+        address[] memory accounts = new address[](3);
+        accounts[0] = _getUserFromSeed(seed);
+        accounts[1] = _getUserFromSeed(seed + 1);
+        accounts[2] = _getUserFromSeed(seed + 2);
+
+        vm.startPrank(accounts[0]);
+        if (accounts[0] != address(1)) vm.expectRevert();
+        StakingFacet(address(diamond)).updateAccounts(accounts);
+        vm.stopPrank();
+    }
+
     function migrateFrens(uint seed) public advanceTime(seed) {
         address user = _getUserFromSeed(seed);
         address targetAccount = _getUserFromSeed(seed / 2);
@@ -51,9 +78,24 @@ contract Handler is Test {
         vm.stopPrank();
     }
 
+    function stakePoolTokens(uint seed) public advanceTime(seed) {
+        address user = _getUserFromSeed(seed);
+
+        uint256 amount = _bound(seed, 1, 100_000 ether);
+
+        deal(stakingToken, user, amount);
+
+        vm.startPrank(user);
+        IERC20(stakingToken).approve(address(diamond), amount);
+        StakingFacet(address(diamond)).stakePoolTokens(amount);
+        vm.stopPrank();
+    }
+
     /////////////////////////////////////////////
     //              Helpers
     /////////////////////////////////////////////
+
+    /// @dev get user address 1-5
     function _getUserFromSeed(uint256 userSeed) public pure returns (address) {
         return address(uint160(userSeed % 5) + 1);
     }

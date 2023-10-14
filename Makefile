@@ -28,9 +28,9 @@ analyze:; slither .
 
 smt :; FOUNDRY_PROFILE=smt forge build
 
-test :; forge test --no-match-contract Invariants -vvv
+test :; forge test --no-match-contract Invariants -v
 
-fuzz :; forge test --match-contract Invariants -vvv
+fuzz :; forge test --match-contract Invariants -v
 
 # dependencies: brew install lcov &&  brew install genhtml
 # https://www.rareskills.io/post/foundry-forge-coverage

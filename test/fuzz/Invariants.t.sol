@@ -19,6 +19,8 @@ contract StopOnRevertInvariants is StdInvariant, Test {
 
     Handler public handler;
 
+    address stakingToken;
+
     /*//////////////////////////////////////////////////////////////////////////
                                      MODIFIERS
     //////////////////////////////////////////////////////////////////////////*/
@@ -36,11 +38,11 @@ contract StopOnRevertInvariants is StdInvariant, Test {
         timestampStore = new TimestampStore();
 
         DeployDiamond deployer = new DeployDiamond();
-        (diamond) = deployer.run();
+        (diamond, stakingToken) = deployer.run();
 
         console.log("diamond: %s", address(diamond));
 
-        handler = new Handler(diamond, timestampStore);
+        handler = new Handler(diamond, timestampStore, stakingToken);
         targetContract(address(handler));
     }
 
@@ -52,6 +54,14 @@ contract StopOnRevertInvariants is StdInvariant, Test {
 
     function invariant_gettersCantRevert() public useCurrentTimestamp {
         StakingFacet(address(diamond)).poolTokensRate();
+        StakingFacet(address(diamond)).frens(msg.sender);
+
+        address[] memory accounts = new address[](3);
+        accounts[0] = address(0);
+        accounts[1] = address(1);
+        accounts[2] = address(2);
+
+        StakingFacet(address(diamond)).bulkFrens(accounts);
         StakingFacet(address(diamond)).staked(msg.sender);
         StakingFacet(address(diamond)).ticketCost(0);
     }

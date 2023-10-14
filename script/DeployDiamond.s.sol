@@ -25,9 +25,15 @@ contract DeployDiamond is Script, HelperContract {
     uint256 public DEFAULT_ANVIL_KEY =
         0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80;
 
-    function run() external returns (StakingDiamond diamond) {
+    function run()
+        external
+        returns (StakingDiamond diamond, address stakingToken)
+    {
         HelperConfig helperConfig = new HelperConfig();
-        (uint256 deployerKey, ) = helperConfig.activeNetworkConfig();
+        (uint256 deployerKey, address erc20) = helperConfig
+            .activeNetworkConfig();
+
+        stakingToken = erc20;
 
         vm.startBroadcast(deployerKey);
 
@@ -85,6 +91,8 @@ contract DeployDiamond is Script, HelperContract {
 
         // deploy diamond
         diamond = new StakingDiamond(cut, _args);
+
+        // StakingFacet(address(diamond)).updatePoolTokenContract(erc20);
 
         vm.stopBroadcast();
     }

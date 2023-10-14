@@ -9,23 +9,32 @@ import "../interfaces/IERC1155TokenReceiver.sol";
 contract StakingFacet {
     AppStorage internal s;
     bytes4 internal constant ERC1155_BATCH_ACCEPTED = 0xbc197c81; // Return value from `onERC1155BatchReceived` call if
-        // a contract accepts receipt (i.e
-        // `bytes4(keccak256("onERC1155BatchReceived(address,address,uint256[],uint256[],bytes)"))`).
+    // a contract accepts receipt (i.e
+    // `bytes4(keccak256("onERC1155BatchReceived(address,address,uint256[],uint256[],bytes)"))`).
 
     event TransferBatch(
-        address indexed _operator, address indexed _from, address indexed _to, uint256[] _ids, uint256[] _values
+        address indexed _operator,
+        address indexed _from,
+        address indexed _to,
+        uint256[] _ids,
+        uint256[] _values
     );
     event Transfer(address indexed _from, address indexed _to, uint256 _value);
     event PoolTokensRate(uint256 _newRate);
+    event PoolTokensAddress(address _newPoolContract);
 
     function frens(address _account) public view returns (uint256 frens_) {
         Account storage account = s.accounts[_account];
         uint256 timePeriod = block.timestamp - account.lastFrensUpdate;
         frens_ = account.frens;
-        frens_ += ((account.poolTokens * s.poolTokensRate) * timePeriod) / 24 hours;
+        frens_ +=
+            ((account.poolTokens * s.poolTokensRate) * timePeriod) /
+            24 hours;
     }
 
-    function bulkFrens(address[] calldata _accounts) external view returns (uint256[] memory frens_) {
+    function bulkFrens(
+        address[] calldata _accounts
+    ) external view returns (uint256[] memory frens_) {
         frens_ = new uint256[](_accounts.length);
         for (uint256 i; i < _accounts.length; i++) {
             frens_[i] = frens(_accounts[i]);
@@ -46,6 +55,18 @@ contract StakingFacet {
             account.frens = frens(accountAddress);
             account.lastFrensUpdate = uint40(block.timestamp);
         }
+    }
+
+    // @audit-issue this function did not exist, so pool contract could not be set
+    function updatePoolTokenContract(address _newPoolContract) external {
+        LibDiamond.enforceIsContractOwner();
+        s.poolContract = _newPoolContract;
+        emit PoolTokensAddress(_newPoolContract);
+    }
+
+    // @audit-issue this function did not exist, so pool contract could not be set
+    function getPoolContract() external view returns (address) {
+        return s.poolContract;
     }
 
     // Used to change the rate of frens produced
@@ -72,23 +93,38 @@ contract StakingFacet {
         updateFrens();
         Account storage account = s.accounts[msg.sender];
         account.poolTokens += _poolTokens;
-        IERC20(s.poolContract).transferFrom(msg.sender, address(this), _poolTokens);
+        IERC20(s.poolContract).transferFrom(
+            msg.sender,
+            address(this),
+            _poolTokens
+        );
     }
 
-    function staked(address _account) external view returns (uint256 poolTokens_) {
+    function staked(
+        address _account
+    ) external view returns (uint256 poolTokens_) {
         poolTokens_ = s.accounts[_account].poolTokens;
     }
 
     function withdrawPoolStake(uint256 _poolTokens) external {
         updateFrens();
         uint256 accountPoolTokens = s.accounts[msg.sender].poolTokens;
-        require(accountPoolTokens >= _poolTokens, "Can't withdraw more poolTokens than in account");
+        require(
+            accountPoolTokens >= _poolTokens,
+            "Can't withdraw more poolTokens than in account"
+        );
         s.accounts[msg.sender].poolTokens = accountPoolTokens - _poolTokens;
         IERC20(s.poolContract).transfer(msg.sender, _poolTokens);
     }
 
-    function claimTickets(uint256[] calldata _ids, uint256[] calldata _values) external {
-        require(_ids.length == _values.length, "Staking: _ids not the same length as _values");
+    function claimTickets(
+        uint256[] calldata _ids,
+        uint256[] calldata _values
+    ) external {
+        require(
+            _ids.length == _values.length,
+            "Staking: _ids not the same length as _values"
+        );
         updateFrens();
         uint256 frensBal = s.accounts[msg.sender].frens;
         // gas optimization
@@ -114,9 +150,13 @@ contract StakingFacet {
         }
         if (size > 0) {
             require(
-                ERC1155_BATCH_ACCEPTED
-                    == IERC1155TokenReceiver(msg.sender).onERC1155BatchReceived(
-                        msg.sender, address(0), _ids, _values, new bytes(0)
+                ERC1155_BATCH_ACCEPTED ==
+                    IERC1155TokenReceiver(msg.sender).onERC1155BatchReceived(
+                        msg.sender,
+                        address(0),
+                        _ids,
+                        _values,
+                        new bytes(0)
                     ),
                 "Staking: Ticket transfer rejected/failed"
             );
