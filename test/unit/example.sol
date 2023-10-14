@@ -1,6 +1,7 @@
-pragma solidity 0.8.9;
+pragma solidity 0.8.18;
 
 import "forge-std/Test.sol";
+
 // take a look https://book.getfoundry.sh/forge/writing-tests
 // cheatcode to prank accounts and change timestamp https://book.getfoundry.sh/forge/cheatcodes
 

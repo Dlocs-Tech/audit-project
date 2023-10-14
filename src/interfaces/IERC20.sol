@@ -12,11 +12,7 @@ interface IERC20 {
 
     function balanceOf(address _owner) external view returns (uint256 balance);
 
-    function transferFrom(
-        address _from,
-        address _to,
-        uint256 _value
-    ) external returns (bool success);
+    function transferFrom(address _from, address _to, uint256 _value) external returns (bool success);
 
     function transfer(address _to, uint256 _value) external returns (bool success);
 

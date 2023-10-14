@@ -6,6 +6,12 @@ typechain
 typechain-types
 
 #Hardhat files
-cache
-artifacts
+cache_hardhat/
+artifacts/
+
+#Foundry files
+out/
+cache/
+artifacts/
+broadcast/
 

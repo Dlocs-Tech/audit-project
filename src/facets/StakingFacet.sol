@@ -6,19 +6,23 @@ import "../libraries/LibDiamond.sol";
 import "../interfaces/IERC20.sol";
 import "../interfaces/IERC1155TokenReceiver.sol";
 
-
 contract StakingFacet {
     AppStorage internal s;
-    bytes4 internal constant ERC1155_BATCH_ACCEPTED = 0xbc197c81; // Return value from `onERC1155BatchReceived` call if a contract accepts receipt (i.e `bytes4(keccak256("onERC1155BatchReceived(address,address,uint256[],uint256[],bytes)"))`).
-    event TransferBatch(address indexed _operator, address indexed _from, address indexed _to, uint256[] _ids, uint256[] _values);
+    bytes4 internal constant ERC1155_BATCH_ACCEPTED = 0xbc197c81; // Return value from `onERC1155BatchReceived` call if
+        // a contract accepts receipt (i.e
+        // `bytes4(keccak256("onERC1155BatchReceived(address,address,uint256[],uint256[],bytes)"))`).
+
+    event TransferBatch(
+        address indexed _operator, address indexed _from, address indexed _to, uint256[] _ids, uint256[] _values
+    );
     event Transfer(address indexed _from, address indexed _to, uint256 _value);
     event PoolTokensRate(uint256 _newRate);
 
     function frens(address _account) public view returns (uint256 frens_) {
-        Account storage account = s.accounts[_account];        
+        Account storage account = s.accounts[_account];
         uint256 timePeriod = block.timestamp - account.lastFrensUpdate;
-        frens_ = account.frens;            
-        frens_ += ((account.poolTokens * s.poolTokensRate) * timePeriod) / 24 hours;        
+        frens_ = account.frens;
+        frens_ += ((account.poolTokens * s.poolTokensRate) * timePeriod) / 24 hours;
     }
 
     function bulkFrens(address[] calldata _accounts) external view returns (uint256[] memory frens_) {
@@ -28,7 +32,7 @@ contract StakingFacet {
         }
     }
 
-    function updateFrens() internal {        
+    function updateFrens() internal {
         Account storage account = s.accounts[msg.sender];
         account.frens = frens(msg.sender);
         account.lastFrensUpdate = uint40(block.timestamp);
@@ -54,54 +58,47 @@ contract StakingFacet {
     function poolTokensRate() external view returns (uint256) {
         return s.poolTokensRate;
     }
-    
+
     // Transfer all frens from user's account to another account
-    function migrateFrens(address _otherAccount) external {        
+    function migrateFrens(address _otherAccount) external {
         Account storage account = s.accounts[tx.origin];
         Account storage otherAccount = s.accounts[_otherAccount];
         otherAccount.frens += account.frens;
         account.frens = 0;
         account.lastFrensUpdate = uint40(block.timestamp);
-    }    
+    }
 
     function stakePoolTokens(uint256 _poolTokens) external {
-        updateFrens();        
-        Account storage account = s.accounts[msg.sender];        
-        account.poolTokens += _poolTokens;                
+        updateFrens();
+        Account storage account = s.accounts[msg.sender];
+        account.poolTokens += _poolTokens;
         IERC20(s.poolContract).transferFrom(msg.sender, address(this), _poolTokens);
     }
 
-    function staked(address _account)
-        external
-        view
-        returns (
-            uint256 poolTokens_
-        )
-    {
+    function staked(address _account) external view returns (uint256 poolTokens_) {
         poolTokens_ = s.accounts[_account].poolTokens;
     }
-    
 
     function withdrawPoolStake(uint256 _poolTokens) external {
-        updateFrens();        
+        updateFrens();
         uint256 accountPoolTokens = s.accounts[msg.sender].poolTokens;
         require(accountPoolTokens >= _poolTokens, "Can't withdraw more poolTokens than in account");
         s.accounts[msg.sender].poolTokens = accountPoolTokens - _poolTokens;
         IERC20(s.poolContract).transfer(msg.sender, _poolTokens);
     }
-    
+
     function claimTickets(uint256[] calldata _ids, uint256[] calldata _values) external {
         require(_ids.length == _values.length, "Staking: _ids not the same length as _values");
-        updateFrens();    
+        updateFrens();
         uint256 frensBal = s.accounts[msg.sender].frens;
         // gas optimization
-        unchecked {            
+        unchecked {
             for (uint256 i; i < _ids.length; i++) {
                 uint256 id = _ids[i];
                 uint256 value = _values[i];
                 require(id < 6, "Staking: Ticket not found");
                 uint256 l_ticketCost = ticketCost(id);
-                uint256 cost = l_ticketCost * value;            
+                uint256 cost = l_ticketCost * value;
                 require(frensBal >= cost, "Staking: Not enough frens points");
                 frensBal -= cost;
                 s.tickets[id].accountBalances[msg.sender] += value;
@@ -117,7 +114,10 @@ contract StakingFacet {
         }
         if (size > 0) {
             require(
-                ERC1155_BATCH_ACCEPTED == IERC1155TokenReceiver(msg.sender).onERC1155BatchReceived(msg.sender, address(0), _ids, _values, new bytes(0)),
+                ERC1155_BATCH_ACCEPTED
+                    == IERC1155TokenReceiver(msg.sender).onERC1155BatchReceived(
+                        msg.sender, address(0), _ids, _values, new bytes(0)
+                    ),
                 "Staking: Ticket transfer rejected/failed"
             );
         }
