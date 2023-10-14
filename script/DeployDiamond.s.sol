@@ -5,7 +5,7 @@ pragma solidity ^0.8.0;
  * \
  * Authors: Timo Neumann <timo@fyde.fi>, Rohan Sundar <rohan@fyde.fi>
  * EIP-2535 Diamonds: https://eips.ethereum.org/EIPS/eip-2535
- * 
+ *
  * Script to deploy template diamond with Cut, Loupe and facets
  * /*****************************************************************************
  */
@@ -22,11 +22,12 @@ import {HelperContract} from "../test/HelperContract.t.sol";
 import {HelperConfig} from "./HelperConfig.s.sol";
 
 contract DeployDiamond is Script, HelperContract {
-    uint256 public DEFAULT_ANVIL_KEY = 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80;
+    uint256 public DEFAULT_ANVIL_KEY =
+        0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80;
 
     function run() external returns (StakingDiamond diamond) {
         HelperConfig helperConfig = new HelperConfig();
-        (uint256 deployerKey,) = helperConfig.activeNetworkConfig();
+        (uint256 deployerKey, ) = helperConfig.activeNetworkConfig();
 
         vm.startBroadcast(deployerKey);
 
@@ -38,7 +39,8 @@ contract DeployDiamond is Script, HelperContract {
         TicketsFacet ticketsF = new TicketsFacet();
 
         // diamod arguments
-        StakingDiamond.ConstructorArgs memory _args = StakingDiamond.ConstructorArgs({owner: msg.sender});
+        StakingDiamond.ConstructorArgs memory _args = StakingDiamond
+            .ConstructorArgs({owner: msg.sender});
 
         // FacetCut array which contains the three standard facets to be added
         FacetCut[] memory cut = new FacetCut[](5);

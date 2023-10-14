@@ -28,20 +28,31 @@ contract StopOnRevertInvariants is StdInvariant, Test {
         _;
     }
 
+    /*//////////////////////////////////////////////////////////////////////////
+                                     SETUP
+    //////////////////////////////////////////////////////////////////////////*/
+
     function setUp() external {
         timestampStore = new TimestampStore();
 
         DeployDiamond deployer = new DeployDiamond();
         (diamond) = deployer.run();
 
+        console.log("diamond: %s", address(diamond));
+
         handler = new Handler(diamond, timestampStore);
-        // targetContract(address(handler));
-        targetContract(address(diamond));
+        targetContract(address(handler));
     }
+
+    /*//////////////////////////////////////////////////////////////////////////
+                                     INVARIANTS
+    //////////////////////////////////////////////////////////////////////////*/
 
     // function invariant_xxxx() public useCurrentTimestamp {}
 
     function invariant_gettersCantRevert() public useCurrentTimestamp {
         StakingFacet(address(diamond)).poolTokensRate();
+        StakingFacet(address(diamond)).staked(msg.sender);
+        StakingFacet(address(diamond)).ticketCost(0);
     }
 }

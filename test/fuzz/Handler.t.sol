@@ -7,6 +7,7 @@ import {console} from "forge-std/console.sol";
 import {EnumerableSet} from "@openzeppelin/utils/structs/EnumerableSet.sol";
 
 import {StakingDiamond} from "../../src/StakingDiamond.sol";
+import {StakingFacet} from "../../src/facets/StakingFacet.sol";
 import {TimestampStore} from "./store/TimestampStore.t.sol";
 
 contract Handler is Test {
@@ -37,10 +38,23 @@ contract Handler is Test {
         _;
     }
 
-    // FUNCTOINS TO INTERACT WITH
+    /////////////////////////////////////////////
+    //              Staking Facet
+    /////////////////////////////////////////////
 
-    ///////////////////
-    // Staking Facet //
-    ///////////////////
-    function updateFrens(uint seed) public advanceTime(seed) {}
+    function migrateFrens(uint seed) public advanceTime(seed) {
+        address user = _getUserFromSeed(seed);
+        address targetAccount = _getUserFromSeed(seed / 2);
+
+        vm.startPrank(user);
+        StakingFacet(address(diamond)).migrateFrens(targetAccount);
+        vm.stopPrank();
+    }
+
+    /////////////////////////////////////////////
+    //              Helpers
+    /////////////////////////////////////////////
+    function _getUserFromSeed(uint256 userSeed) public pure returns (address) {
+        return address(uint160(userSeed % 5) + 1);
+    }
 }
