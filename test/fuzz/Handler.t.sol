@@ -14,13 +14,19 @@ import {TimestampStore} from "./store/TimestampStore.t.sol";
 contract Handler is Test {
     using EnumerableSet for EnumerableSet.AddressSet;
 
-    // Deployed contracts to interact with
+    /// @dev Deployed contracts to interact with
     StakingDiamond public diamond;
 
-    // Track time
+    /// @dev Track time
     TimestampStore public timestampStore;
 
+    /// @dev  ERC20 token to stake
     address public stakingToken;
+
+    /// @dev Ghost Variables
+    uint public totalClaims;
+    uint public totalStakes;
+    uint public totalWithdrawals;
 
     constructor(
         StakingDiamond _diamond,
@@ -58,6 +64,8 @@ contract Handler is Test {
     /////////////////////////////////////////////
 
     function updateAccounts(uint seed) public advanceTime(seed) {
+        if (seed > type(uint256).max - 2) return;
+
         address[] memory accounts = new address[](3);
         accounts[0] = _getUserFromSeed(seed);
         accounts[1] = _getUserFromSeed(seed + 1);
@@ -67,6 +75,32 @@ contract Handler is Test {
         if (accounts[0] != address(1)) vm.expectRevert();
         StakingFacet(address(diamond)).updateAccounts(accounts);
         vm.stopPrank();
+    }
+
+    function claimTickets(uint seed) public advanceTime(seed) {
+        address user = _getUserFromSeed(seed);
+
+        uint[] memory ids = new uint[](6);
+        uint[] memory values = new uint[](6);
+
+        uint totalFrens;
+
+        for (uint i = 0; i < values.length; i++) {
+            values[i] = seed % (27 - i * 5); // id=5 gets max 1 ticket and id=0 gets max 27 tickets
+            ids[i] = i;
+
+            totalFrens +=
+                StakingFacet(address(diamond)).ticketCost(i) *
+                values[i];
+        }
+
+        if (totalFrens <= StakingFacet(address(diamond)).frens(user)) {
+            vm.startPrank(user);
+            StakingFacet(address(diamond)).claimTickets(ids, values);
+            vm.stopPrank();
+
+            totalClaims++;
+        }
     }
 
     function migrateFrens(uint seed) public advanceTime(seed) {
@@ -89,6 +123,22 @@ contract Handler is Test {
         IERC20(stakingToken).approve(address(diamond), amount);
         StakingFacet(address(diamond)).stakePoolTokens(amount);
         vm.stopPrank();
+
+        totalStakes++;
+    }
+
+    function withdrawPoolStake(uint seed) public advanceTime(seed) {
+        address user = _getUserFromSeed(seed);
+
+        uint balance = StakingFacet(address(diamond)).staked(user);
+
+        uint256 amount = _bound(seed, 0, balance);
+
+        vm.startPrank(user);
+        StakingFacet(address(diamond)).withdrawPoolStake(amount);
+        vm.stopPrank();
+
+        totalWithdrawals++;
     }
 
     /////////////////////////////////////////////
