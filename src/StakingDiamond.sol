@@ -1,13 +1,15 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-/******************************************************************************\
-* Author: Nick Mudge
-* Aavegotchi Staking Diamond
-* 
-* Uses the diamond-2, version 1.3.4, diamond implementation:
-* https://github.com/mudgen/diamond-2
-/******************************************************************************/
+/**
+ * \
+ * Author: Nick Mudge
+ * Aavegotchi Staking Diamond
+ *
+ * Uses the diamond-2, version 1.3.4, diamond implementation:
+ * https://github.com/mudgen/diamond-2
+ * /*****************************************************************************
+ */
 
 import "./libraries/LibDiamond.sol";
 import "./interfaces/IDiamondLoupe.sol";
@@ -20,15 +22,18 @@ import "./interfaces/IERC1155.sol";
 
 contract StakingDiamond {
     AppStorage s;
-    event TransferSingle(address indexed _operator, address indexed _from, address indexed _to, uint256 _id, uint256 _value);
+
+    event TransferSingle(
+        address indexed _operator, address indexed _from, address indexed _to, uint256 _id, uint256 _value
+    );
     event PoolTokensRate(uint256 _newRate);
 
     struct ConstructorArgs {
-        address owner;        
+        address owner;
     }
 
     constructor(IDiamondCut.FacetCut[] memory _diamondCut, ConstructorArgs memory _args) {
-        require(_args.owner != address(0), "StakingDiamond: owner can't be address(0)");        
+        require(_args.owner != address(0), "StakingDiamond: owner can't be address(0)");
         LibDiamond.diamondCut(_diamondCut, address(0), new bytes(0));
         LibDiamond.setContractOwner(_args.owner);
 
@@ -40,7 +45,7 @@ contract StakingDiamond {
         emit PoolTokensRate(10);
 
         // adding ERC165 data
-        ds.supportedInterfaces[type(IERC165).interfaceId] = true;        
+        ds.supportedInterfaces[type(IERC165).interfaceId] = true;
         ds.supportedInterfaces[type(IDiamondLoupe).interfaceId] = true;
         ds.supportedInterfaces[type(IERC173).interfaceId] = true;
         ds.supportedInterfaces[type(IERC1155).interfaceId] = true;
@@ -70,12 +75,8 @@ contract StakingDiamond {
             let result := delegatecall(gas(), facet, 0, calldatasize(), 0, 0)
             returndatacopy(0, 0, returndatasize())
             switch result
-                case 0 {
-                    revert(0, returndatasize())
-                }
-                default {
-                    return(0, returndatasize())
-                }
+            case 0 { revert(0, returndatasize()) }
+            default { return(0, returndatasize()) }
         }
     }
 

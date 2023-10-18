@@ -2,11 +2,11 @@
 pragma solidity ^0.8.0;
 
 struct Account {
-    // spender => amount    
-    mapping(address => bool) ticketsApproved;    
-    uint40 lastFrensUpdate;    
+    // spender => amount
+    mapping(address => bool) ticketsApproved;
+    uint40 lastFrensUpdate;
     uint256 poolTokens;
-    uint256 frens;    
+    uint256 frens;
 }
 
 struct Ticket {
@@ -17,8 +17,8 @@ struct Ticket {
 
 struct AppStorage {
     mapping(address => Account) accounts;
-    mapping(uint256 => Ticket) tickets;    
+    mapping(uint256 => Ticket) tickets;
     address poolContract;
-    string ticketsBaseUri;    
-    uint256 poolTokensRate;    
+    string ticketsBaseUri;
+    uint256 poolTokensRate;
 }

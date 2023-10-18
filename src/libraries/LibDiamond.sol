@@ -1,10 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-/******************************************************************************\
-* Author: Nick Mudge <nick@perfectabstractions.com> (https://twitter.com/mudgen)
-* EIP-2535 Diamond Standard: https://eips.ethereum.org/EIPS/eip-2535
-/******************************************************************************/
+/**
+ * \
+ * Author: Nick Mudge <nick@perfectabstractions.com> (https://twitter.com/mudgen)
+ * EIP-2535 Diamond Standard: https://eips.ethereum.org/EIPS/eip-2535
+ * /*****************************************************************************
+ */
 import "../interfaces/IDiamondCut.sol";
 
 library LibDiamond {
@@ -51,11 +53,7 @@ library LibDiamond {
     event DiamondCut(IDiamondCut.FacetCut[] _diamondCut, address _init, bytes _calldata);
 
     // Internal function version of diamondCut
-    function diamondCut(
-        IDiamondCut.FacetCut[] memory _diamondCut,
-        address _init,
-        bytes memory _calldata
-    ) internal {
+    function diamondCut(IDiamondCut.FacetCut[] memory _diamondCut, address _init, bytes memory _calldata) internal {
         for (uint256 facetIndex; facetIndex < _diamondCut.length; facetIndex++) {
             IDiamondCut.FacetCutAction action = _diamondCut[facetIndex].action;
             if (action == IDiamondCut.FacetCutAction.Add) {
@@ -112,16 +110,24 @@ library LibDiamond {
         require(_facetAddress == address(0), "LibDiamondCut: Remove facet address must be address(0)");
         for (uint256 selectorIndex; selectorIndex < _functionSelectors.length; selectorIndex++) {
             bytes4 selector = _functionSelectors[selectorIndex];
-            FacetAddressAndSelectorPosition memory oldFacetAddressAndSelectorPosition = ds.facetAddressAndSelectorPosition[selector];
-            require(oldFacetAddressAndSelectorPosition.facetAddress != address(0), "LibDiamondCut: Can't remove function that doesn't exist");
+            FacetAddressAndSelectorPosition memory oldFacetAddressAndSelectorPosition =
+                ds.facetAddressAndSelectorPosition[selector];
+            require(
+                oldFacetAddressAndSelectorPosition.facetAddress != address(0),
+                "LibDiamondCut: Can't remove function that doesn't exist"
+            );
             // can't remove immutable functions -- functions defined directly in the diamond
-            require(oldFacetAddressAndSelectorPosition.facetAddress != address(this), "LibDiamondCut: Can't remove immutable function.");
+            require(
+                oldFacetAddressAndSelectorPosition.facetAddress != address(this),
+                "LibDiamondCut: Can't remove immutable function."
+            );
             // replace selector with last selector
             selectorCount--;
             if (oldFacetAddressAndSelectorPosition.selectorPosition != selectorCount) {
                 bytes4 lastSelector = ds.selectors[selectorCount];
                 ds.selectors[oldFacetAddressAndSelectorPosition.selectorPosition] = lastSelector;
-                ds.facetAddressAndSelectorPosition[lastSelector].selectorPosition = oldFacetAddressAndSelectorPosition.selectorPosition;
+                ds.facetAddressAndSelectorPosition[lastSelector].selectorPosition =
+                    oldFacetAddressAndSelectorPosition.selectorPosition;
             }
             // delete last selector
             ds.selectors.pop();
