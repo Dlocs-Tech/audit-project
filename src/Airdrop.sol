@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import "./interfaces/IERC20.sol";
+import "@openzeppelin/token/ERC20/IERC20.sol";
 
 contract Airdrop {
     function airdropToken(address _token, address[] calldata _receivers, uint256[] calldata _amounts) external {

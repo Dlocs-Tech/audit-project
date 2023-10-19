@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: Unlicense
 pragma solidity 0.8.18;
 
-import "ds-test/test.sol";
-import "../../../src/Airdrop.sol";
-import "../../mocks/MockERC20.sol";
+import { Test } from "forge-std/Test.sol";
+import { Airdrop } from "../../../src/Airdrop.sol";
+import { MockERC20 } from "../../mocks/MockERC20.sol";
 
-contract AirdropTest is DSTest {
+contract AirdropTest is Test {
     Airdrop public airdrop;
     MockERC20 public mockToken; 
 
@@ -16,7 +16,7 @@ contract AirdropTest is DSTest {
         mockToken = new MockERC20();
     }
 
-    function test_airdrop_tokens_fuzz(address[] memory _recivers, uint8[] memory _amounts) public {
+    function tokens_distribution(address[] memory _recivers, uint8[] memory _amounts) public {
         mockToken.approve(address(airdrop), MAX_UINT_TYPE);
 
         if (_recivers.length != _amounts.length) {
