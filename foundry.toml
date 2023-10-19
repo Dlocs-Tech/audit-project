@@ -24,6 +24,9 @@ wrap_comments = true
 quote_style = "double"
 tab_width = 4
 
+[fuzz]
+runs = 128
+
 [invariant]
 runs = 128
 depth = 128
