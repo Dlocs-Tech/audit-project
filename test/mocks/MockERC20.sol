@@ -5,6 +5,6 @@ import "@openzeppelin/token/ERC20/ERC20.sol";
 
 contract MockERC20 is ERC20 {
     constructor() ERC20 ("Mock ERC20", "MERC") {
-        _mint(msg.sender, 1000000e18);
+        _mint(msg.sender, 1000000000e18);
     }
 }

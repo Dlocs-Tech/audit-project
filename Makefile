@@ -30,6 +30,8 @@ smt :; FOUNDRY_PROFILE=smt forge build
 
 test :; forge test --no-match-contract Invariants -v
 
+test_airdrop :; forge test --match-path ./test/fuzz/airdrop/Invariants.t.sol
+
 fuzz :; forge test --match-contract Invariants -v
 
 # dependencies: brew install lcov &&  brew install genhtml
