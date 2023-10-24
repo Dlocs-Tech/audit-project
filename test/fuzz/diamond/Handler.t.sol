@@ -6,9 +6,9 @@ import {Test} from "forge-std/Test.sol";
 import {console} from "forge-std/console.sol";
 import {EnumerableSet} from "@openzeppelin/utils/structs/EnumerableSet.sol";
 
-import {StakingDiamond} from "../../src/StakingDiamond.sol";
-import {StakingFacet, IERC20} from "../../src/facets/StakingFacet.sol";
-import {OwnershipFacet} from "../../src/facets/OwnershipFacet.sol";
+import {StakingDiamond} from "../../../src/StakingDiamond.sol";
+import {StakingFacet, IERC20} from "../../../src/facets/StakingFacet.sol";
+import {OwnershipFacet} from "../../../src/facets/OwnershipFacet.sol";
 import {TimestampStore} from "./store/TimestampStore.t.sol";
 
 contract Handler is Test {

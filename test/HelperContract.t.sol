@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.8.0;
+pragma solidity 0.8.18;
 
 /**
  * \
@@ -22,7 +22,7 @@ abstract contract HelperContract is IDiamondCut, IDiamondLoupe, Test {
     function generateSelectors(
         string memory _facetName
     ) internal returns (bytes4[] memory selectors) {
-         string[] memory cmd = new string[](2);
+        string[] memory cmd = new string[](2);
         cmd[0] = "script/GenerateSelectorsFromArtifacts.sh";
         cmd[1] = _facetName;
         bytes memory res = vm.ffi(cmd);

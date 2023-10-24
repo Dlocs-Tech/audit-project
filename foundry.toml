@@ -24,7 +24,21 @@ wrap_comments = true
 quote_style = "double"
 tab_width = 4
 
+[fuzz]
+runs = 128
+
 [invariant]
 runs = 128
 depth = 128
 fail_on_revert = true
+
+[profile.ci]
+verbosity = 1
+
+[profile.ci.invariant]
+runs = 64
+depth = 64
+fail_on_revert = true
+
+[profile.ci.fuzz]
+runs = 64

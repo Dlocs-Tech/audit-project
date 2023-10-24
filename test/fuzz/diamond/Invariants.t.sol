@@ -4,10 +4,10 @@ pragma solidity 0.8.18;
 
 import {Test} from "forge-std/Test.sol";
 import {StdInvariant} from "forge-std/StdInvariant.sol";
-import {StakingDiamond} from "../../src/StakingDiamond.sol";
-import {StakingFacet, IERC20} from "../../src/facets/StakingFacet.sol";
-import {HelperConfig} from "../../script/HelperConfig.s.sol";
-import {DeployDiamond} from "../../script/DeployDiamond.s.sol";
+import {StakingDiamond} from "../../../src/StakingDiamond.sol";
+import {StakingFacet, IERC20} from "../../../src/facets/StakingFacet.sol";
+import {HelperConfig} from "../../../script/HelperConfig.s.sol";
+import {DeployDiamond} from "../../../script/DeployDiamond.s.sol";
 import {Handler} from "./Handler.t.sol";
 import {TimestampStore} from "./store/TimestampStore.t.sol";
 import {console} from "forge-std/console.sol";
